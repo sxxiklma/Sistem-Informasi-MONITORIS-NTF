@@ -1,0 +1,106 @@
+{
+  "name": "Netafarm - Sistem Operasional Sales Motoris",
+  "short_name": "Netafarm",
+  "id": "/",
+  "description": "Aplikasi Sistem Operasional Sales Motoris CV. Netafarm Indolestari - Distributor Pertanian, Hidroponik & Greenhouse",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#0284c7",
+  "orientation": "portrait-primary",
+  "lang": "id",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/images/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/images/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Kunjungan & Tugas",
+      "short_name": "Tugas",
+      "description": "Lihat daftar tugas kunjungan sales lapangan",
+      "url": "/visit-tasks",
+      "icons": [{ "src": "/images/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Rute & Navigasi",
+      "short_name": "Rute",
+      "description": "Peta navigasi rute perjalanan outlet",
+      "url": "/visits",
+      "icons": [{ "src": "/images/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Katalog Produk",
+      "short_name": "Produk",
+      "description": "Katalog produk dan stok barang Netafarm",
+      "url": "/products",
+      "icons": [{ "src": "/images/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Pesanan Penjualan",
+      "short_name": "Pesanan",
+      "description": "Catatan penjualan dan Taking Order outlet",
+      "url": "/orders",
+      "icons": [{ "src": "/images/icons/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}
