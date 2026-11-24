@@ -5,286 +5,350 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/png" href="{{ asset('images/netafarm-logo.png') }}">
-    <title>{{ config('app.name', 'Netafarm') }} - Sistem Monitoring & Navigasi Motoris</title>
+    <title>{{ config('app.name', 'Netafarm') }} - Sistem Monitoring & Navigasi Sales Motoris</title>
     @include('partials.pwa-head')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
-        /* Minimalist Map & Navigation Animations */
-        @keyframes dashOffset {
-            from { stroke-dashoffset: 240; }
-            to { stroke-dashoffset: 0; }
+        /* Minimalist Map & Marker Animations */
+        @keyframes pulsePing {
+            0% { transform: scale(0.8); opacity: 0.9; }
+            100% { transform: scale(2.6); opacity: 0; }
         }
-        @keyframes pulseRadar {
-            0% { transform: scale(0.6); opacity: 0.9; }
-            100% { transform: scale(2.8); opacity: 0; }
+        @keyframes floatHUD {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
         }
-        @keyframes floatCard {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-6px); }
+        .anim-pulse-ping {
+            animation: pulsePing 2.4s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
         }
-        @keyframes pingFast {
-            0% { transform: scale(1); opacity: 1; }
-            75%, 100% { transform: scale(2.4); opacity: 0; }
+        .anim-float-hud {
+            animation: floatHUD 4s ease-in-out infinite;
         }
-        @keyframes scanline {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(1000%); }
+        /* Leaflet Dark Customizations */
+        .leaflet-container {
+            background: #020617 !important;
+            font-family: inherit;
         }
-        .anim-route-line {
-            stroke-dasharray: 8 6;
-            animation: dashOffset 4s linear infinite;
+        .leaflet-popup-content-wrapper {
+            background: rgba(15, 23, 42, 0.95) !important;
+            color: #f8fafc !important;
+            border: 1px solid rgba(56, 189, 248, 0.3) !important;
+            border-radius: 1rem !important;
+            backdrop-filter: blur(8px) !important;
+            box-shadow: 0 20px 25px -5px rgba(2, 6, 23, 0.7) !important;
         }
-        .anim-route-line-fast {
-            stroke-dasharray: 6 4;
-            animation: dashOffset 2.5s linear infinite;
+        .leaflet-popup-tip {
+            background: rgba(15, 23, 42, 0.95) !important;
         }
-        .anim-radar {
-            animation: pulseRadar 3s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
+        .leaflet-popup-close-button {
+            color: #94a3b8 !important;
+            padding: 6px !important;
         }
-        .anim-radar-delay {
-            animation: pulseRadar 3s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
-            animation-delay: 1.5s;
+        .custom-map-marker {
+            background: transparent;
+            border: none;
         }
-        .anim-float {
-            animation: floatCard 4s ease-in-out infinite;
-        }
-        .anim-ping-fast {
-            animation: pingFast 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
-        }
-        /* Topographic / Grid map background pattern */
-        .bg-map-grid {
+        /* Cyber map background grid */
+        .bg-cyber-grid {
             background-image: 
-                radial-gradient(circle at 1px 1px, rgba(56, 189, 248, 0.12) 1px, transparent 0),
-                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 32px 32px, 64px 64px, 64px 64px;
+                radial-gradient(circle at 1px 1px, rgba(56, 189, 248, 0.1) 1px, transparent 0),
+                linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 28px 28px, 56px 56px, 56px 56px;
         }
     </style>
 </head>
-<body class="min-h-screen bg-slate-950 font-sans text-slate-100 antialiased selection:bg-blue-600 selection:text-white">
-    <div class="grid min-h-screen lg:grid-cols-[1.1fr_.9fr]">
+<body class="min-h-screen bg-slate-950 font-sans text-slate-100 antialiased selection:bg-blue-600 selection:text-white overflow-x-hidden">
+    
+    <div class="grid min-h-screen lg:grid-cols-[1.2fr_0.8fr] xl:grid-cols-[1.3fr_0.7fr]">
         
-        {{-- SISI KIRI: ANIMATED MINIMALIST GPS & MAPS VISUALIZATION --}}
-        <aside class="relative hidden overflow-hidden bg-slate-950 p-8 lg:p-12 text-white lg:flex lg:flex-col lg:justify-between border-r border-slate-800/80">
-            {{-- Deep ambient gradient glow --}}
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(14,165,233,0.18),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(2,132,199,0.12),transparent_45%),linear-gradient(175deg,#020617_0%,#090d1a_60%,#0c192e_100%)] pointer-events-none"></div>
+        {{-- SISI KIRI: FULL-BLEED REAL INTERACTIVE LEAFLET DARK MAP --}}
+        <aside class="relative min-h-[380px] lg:min-h-screen overflow-hidden bg-slate-950 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-800/80">
             
-            {{-- Map Grid Texture Overlay --}}
-            <div class="absolute inset-0 bg-map-grid opacity-60 pointer-events-none"></div>
+            {{-- Map Container (Interactive Full-Height) --}}
+            <div id="leafletLoginMap" class="absolute inset-0 z-0 h-full w-full"></div>
 
-            {{-- HEADER: Logo & Identity --}}
-            <div class="relative z-10">
-                <a href="{{ url('/') }}" class="inline-flex items-center gap-3 text-2xl font-black tracking-tight group">
-                    <img src="{{ asset('images/netafarm-logo.png') }}" alt="Netafarm Logo" class="h-10 w-10 shrink-0 object-contain drop-shadow-[0_0_12px_rgba(56,189,248,0.4)] transition-transform duration-300 group-hover:scale-105">
-                    <span class="text-white">Neta<span class="text-sky-400">farm</span></span>
-                    <span class="inline-block ms-2 px-2 py-0.5 text-[10px] font-mono font-bold tracking-widest uppercase rounded-md bg-sky-500/15 border border-sky-400/30 text-sky-300">
-                        GPS Hub
-                    </span>
-                </a>
-                <p class="mt-2 text-xs font-medium text-slate-400">CV. Netafarm Indolestari &bull; Distributor Pertanian & Hidroponik</p>
-            </div>
+            {{-- Top Vignette Overlay for Crisp Readability --}}
+            <div class="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-slate-950/90 via-slate-950/40 to-transparent z-10"></div>
+            {{-- Bottom Vignette Overlay --}}
+            <div class="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent z-10"></div>
 
-            {{-- CENTER: INTERACTIVE ANIMATED MINIMALIST MAP & ROUTE SIMULATOR --}}
-            <div class="relative z-10 my-6 flex-1 flex flex-col justify-center">
-                
-                {{-- Minimalist Canvas Container with border glow --}}
-                <div class="relative w-full max-w-lg rounded-3xl border border-sky-500/30 bg-slate-900/60 p-6 shadow-2xl shadow-sky-950/50 backdrop-blur-md overflow-hidden">
-                    
-                    {{-- Ambient Radar Sweep Line behind map --}}
-                    <div class="absolute inset-0 bg-[linear-gradient(rgba(56,189,248,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(56,189,248,0.03)_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none"></div>
-
-                    {{-- Header of Map Simulator --}}
-                    <div class="flex items-center justify-between pb-4 border-b border-slate-800/80 text-xs">
+            {{-- TOP BAR OVER MAP: Logo & Dispatch Status --}}
+            <div class="relative z-20 p-5 sm:p-7 flex items-center justify-between">
+                <a href="{{ url('/') }}" class="inline-flex items-center gap-2.5 group">
+                    <img src="{{ asset('images/netafarm-logo.png') }}" alt="Netafarm" class="h-9 w-9 shrink-0 object-contain drop-shadow-[0_0_12px_rgba(56,189,248,0.5)] transition-transform duration-300 group-hover:scale-105">
+                    <div>
                         <div class="flex items-center gap-2">
-                            <span class="relative flex h-2.5 w-2.5">
-                                <span class="anim-ping-fast absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                            </span>
-                            <span class="font-mono font-bold uppercase tracking-wider text-emerald-400 text-[11px]">Live Dispatch Active</span>
-                        </div>
-                        <div class="font-mono text-[11px] text-slate-400 flex items-center gap-1.5">
-                            <svg class="h-3.5 w-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                            <span>-7.3735° S, 112.7051° E</span>
-                        </div>
-                    </div>
-
-                    {{-- THE VECTOR MAP SVG --}}
-                    <div class="relative h-64 w-full mt-3 flex items-center justify-center">
-                        <svg class="w-full h-full overflow-visible" viewBox="0 0 460 250" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <defs>
-                                <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" stop-color="#38bdf8" />
-                                    <stop offset="50%" stop-color="#0284c7" />
-                                    <stop offset="100%" stop-color="#22d3ee" />
-                                </linearGradient>
-                                <linearGradient id="subRouteGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.3" />
-                                    <stop offset="100%" stop-color="#0284c7" stop-opacity="0.7" />
-                                </linearGradient>
-                                <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                                    <feGaussianBlur stdDeviation="4" result="blur" />
-                                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                                </filter>
-                            </defs>
-
-                            {{-- Faint Street Grid Roads --}}
-                            <path d="M 20 80 Q 140 60 260 85 T 440 70" stroke="rgba(255,255,255,0.06)" stroke-width="2" />
-                            <path d="M 40 180 Q 160 170 280 200 T 440 180" stroke="rgba(255,255,255,0.06)" stroke-width="2" />
-                            <path d="M 110 30 Q 130 130 120 220" stroke="rgba(255,255,255,0.06)" stroke-width="2" />
-                            <path d="M 330 30 Q 320 120 340 220" stroke="rgba(255,255,255,0.06)" stroke-width="2" />
-
-                            {{-- Secondary Dispatch Route (connecting outlets) --}}
-                            <path d="M 70 160 Q 130 90 220 130 T 370 70" stroke="url(#subRouteGradient)" stroke-width="2.5" stroke-dasharray="4 4" />
-
-                            {{-- Primary Active Navigation Route (Animated Glow Path) --}}
-                            <path id="activeHighwayRoute" d="M 60 70 C 130 30, 160 180, 240 140 S 340 110, 400 170" 
-                                  stroke="url(#routeGradient)" 
-                                  stroke-width="3.5" 
-                                  stroke-linecap="round"
-                                  class="anim-route-line"
-                                  filter="url(#glow)" />
-
-                            {{-- WAYPOINT 1: Netafarm Central Depot (Jemundo HQ) --}}
-                            <g transform="translate(60, 70)">
-                                <circle cx="0" cy="0" r="18" fill="rgba(2, 132, 199, 0.2)" class="anim-radar" />
-                                <circle cx="0" cy="0" r="18" fill="rgba(56, 189, 248, 0.15)" class="anim-radar-delay" />
-                                <circle cx="0" cy="0" r="7" fill="#0284c7" stroke="#ffffff" stroke-width="2" />
-                                <text x="14" y="-8" fill="#e0f2fe" font-size="11" font-weight="700" font-family="sans-serif">Netafarm HQ</text>
-                                <text x="14" y="6" fill="#94a3b8" font-size="9" font-family="sans-serif">Jemundo, Sidoarjo</text>
-                            </g>
-
-                            {{-- WAYPOINT 2: Intermediate Outlet --}}
-                            <g transform="translate(240, 140)">
-                                <circle cx="0" cy="0" r="5" fill="#38bdf8" stroke="#ffffff" stroke-width="2" />
-                                <text x="-8" y="-14" text-anchor="middle" fill="#bae6fd" font-size="10" font-weight="600" font-family="sans-serif">Kios Barokah</text>
-                            </g>
-
-                            {{-- WAYPOINT 3: Destination Outlet (Greenhouse / Mitra) --}}
-                            <g transform="translate(400, 170)">
-                                <circle cx="0" cy="0" r="14" fill="rgba(34, 197, 94, 0.2)" class="anim-radar" />
-                                <circle cx="0" cy="0" r="6" fill="#22c55e" stroke="#ffffff" stroke-width="2" />
-                                <text x="-12" y="20" text-anchor="end" fill="#bbf7d0" font-size="10" font-weight="700" font-family="sans-serif">Greenhouse Mitra</text>
-                                <text x="-12" y="32" text-anchor="end" fill="#86efac" font-size="9" font-family="sans-serif">Check-in Ready</text>
-                            </g>
-
-                            {{-- ANIMATED MOTORIS SALES BEACON (Moving Marker on Route) --}}
-                            <g transform="translate(180, 138)">
-                                <circle cx="0" cy="0" r="12" fill="rgba(245, 158, 11, 0.3)" class="anim-radar" />
-                                <circle cx="0" cy="0" r="6" fill="#f59e0b" stroke="#ffffff" stroke-width="2" />
-                            </g>
-                        </svg>
-
-                        {{-- Floating Glassmorphism Telemetry Card --}}
-                        <div class="anim-float absolute bottom-2 left-4 right-4 sm:left-auto sm:right-4 sm:bottom-4 rounded-2xl border border-sky-400/30 bg-slate-950/85 p-3 text-white backdrop-blur-md shadow-xl flex items-center justify-between gap-4 max-w-xs">
-                            <div class="flex items-center gap-2.5">
-                                <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-sky-500/20 text-sky-400">
-                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                                </div>
-                                <div class="text-[11px] leading-tight">
-                                    <p class="font-bold text-white">Sales Motoris 01</p>
-                                    <p class="text-[10px] text-sky-300 font-mono">Kecepatan: 36 km/jam</p>
-                                </div>
-                            </div>
-                            <span class="rounded-lg bg-emerald-500/20 px-2 py-1 text-[10px] font-bold font-mono text-emerald-300 border border-emerald-500/30">
-                                ON ROUTE
+                            <span class="text-xl font-black tracking-tight text-white">Neta<span class="text-sky-400">farm</span></span>
+                            <span class="px-2 py-0.5 text-[9px] font-mono font-bold tracking-widest uppercase rounded-md bg-sky-500/20 border border-sky-400/40 text-sky-300">
+                                GPS LIVE
                             </span>
                         </div>
+                        <p class="text-[10px] text-slate-400">Distributor Pertanian, Hidroponik & Greenhouse</p>
                     </div>
-                </div>
+                </a>
 
-                {{-- Feature Bullet Points below map --}}
-                <div class="mt-8 grid grid-cols-2 gap-4 max-w-lg">
-                    <div class="flex items-start gap-3 rounded-2xl border border-white/5 bg-slate-900/40 p-3.5 backdrop-blur-sm">
-                        <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-sky-500/10 text-sky-400">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                        </div>
-                        <div class="text-xs">
-                            <p class="font-bold text-slate-200">Presisi Titik Outlet</p>
-                            <p class="text-[11px] text-slate-400 mt-0.5">Navigasi jalan raya otomatis ke lokasi kios tani.</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-3 rounded-2xl border border-white/5 bg-slate-900/40 p-3.5 backdrop-blur-sm">
-                        <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-sky-500/10 text-sky-400">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        </div>
-                        <div class="text-xs">
-                            <p class="font-bold text-slate-200">Check-In Geofence</p>
-                            <p class="text-[11px] text-slate-400 mt-0.5">Validasi kehadiran sales langsung di kios mitra.</p>
-                        </div>
-                    </div>
+                {{-- Live Telemetry Pill --}}
+                <div class="hidden sm:inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-slate-950/80 px-3.5 py-1.5 text-xs backdrop-blur-md shadow-lg">
+                    <span class="relative flex h-2 w-2">
+                        <span class="anim-pulse-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span class="font-mono text-[11px] font-bold text-emerald-400">DISPATCH MONITORING ACTIVE</span>
                 </div>
-
             </div>
 
-            {{-- FOOTER: Copyright --}}
-            <div class="relative z-10 flex items-center justify-between text-xs text-slate-500 pt-4 border-t border-slate-900">
-                <span class="font-mono text-[11px]">&copy; {{ date('Y') }} MotorisTrack Platform</span>
-                <span class="text-[11px] text-slate-500">Surabaya &bull; Sidoarjo Operational Hub</span>
+            {{-- BOTTOM OVER MAP: Floating HUD Card with Route & Sales Stats --}}
+            <div class="relative z-20 p-4 sm:p-6 flex flex-col sm:flex-row items-stretch sm:items-end justify-between gap-3 pointer-events-none">
+                
+                {{-- Floating Sales Telemetry Card --}}
+                <div class="pointer-events-auto anim-float-hud rounded-2xl border border-sky-400/30 bg-slate-950/90 p-3.5 text-white shadow-2xl shadow-sky-950/70 backdrop-blur-md max-w-sm w-full">
+                    <div class="flex items-center justify-between pb-2.5 border-b border-slate-800/80">
+                        <div class="flex items-center gap-2">
+                            <span class="h-2 w-2 rounded-full bg-sky-400 anim-pulse-ping"></span>
+                            <p class="text-[11px] font-bold uppercase tracking-wider text-sky-300 font-mono">Sales Motoris 01 (Sofan)</p>
+                        </div>
+                        <span class="px-2 py-0.5 text-[9px] font-mono font-bold rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            ON ROUTE
+                        </span>
+                    </div>
+
+                    <div class="mt-2.5 grid grid-cols-3 gap-2 text-center text-xs">
+                        <div class="rounded-xl bg-slate-900/80 p-2 border border-slate-800/60">
+                            <p class="text-[10px] text-slate-400">Kecepatan</p>
+                            <p class="font-mono font-bold text-sky-400 text-xs mt-0.5" id="liveSpeedText">38 km/h</p>
+                        </div>
+                        <div class="rounded-xl bg-slate-900/80 p-2 border border-slate-800/60">
+                            <p class="text-[10px] text-slate-400">Kunjungan</p>
+                            <p class="font-mono font-bold text-emerald-400 text-xs mt-0.5">4 / 6 Outlet</p>
+                        </div>
+                        <div class="rounded-xl bg-slate-900/80 p-2 border border-slate-800/60">
+                            <p class="text-[10px] text-slate-400">Order Hari Ini</p>
+                            <p class="font-mono font-bold text-amber-400 text-xs mt-0.5">Rp 1.48 Jt</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-2.5 flex items-center justify-between text-[10px] text-slate-400 pt-1">
+                        <span class="truncate">📍 Menuju: <b>Kios Barokah Mart</b></span>
+                        <span class="shrink-0 text-sky-300 font-mono">ETA: 8 mnt</span>
+                    </div>
+                </div>
+
+                {{-- Interactive Map Zoom Helper Hint --}}
+                <div class="pointer-events-auto hidden md:flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/80 px-3 py-1.5 text-[10px] text-slate-400 backdrop-blur-md">
+                    <svg class="h-3.5 w-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"/></svg>
+                    <span>Peta Interaktif: Gulir & Klik Titik Outlet</span>
+                </div>
             </div>
         </aside>
 
-        {{-- SISI KANAN: FORM LOGIN DENGAN AMBIENT MAP ACCENT --}}
-        <main class="relative flex min-h-screen items-center justify-center bg-slate-950 px-5 py-10 sm:px-8 overflow-hidden">
-            {{-- Ambient background map glow for mobile & desktop --}}
-            <div class="absolute inset-0 bg-map-grid opacity-35 pointer-events-none"></div>
-            <div class="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-blue-600/15 blur-3xl pointer-events-none"></div>
-            <div class="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-sky-500/10 blur-3xl pointer-events-none"></div>
+        {{-- SISI KANAN: REFINED SLEEK LOGIN PANEL --}}
+        <main class="relative flex min-h-screen items-center justify-center bg-slate-950 p-6 sm:p-10 lg:p-12 overflow-hidden">
+            
+            {{-- Ambient Cyber Grid Texture --}}
+            <div class="absolute inset-0 bg-cyber-grid opacity-30 pointer-events-none"></div>
+            <div class="absolute top-1/4 -right-20 h-72 w-72 rounded-full bg-blue-600/10 blur-3xl pointer-events-none"></div>
+            <div class="absolute bottom-1/4 -left-20 h-72 w-72 rounded-full bg-sky-500/10 blur-3xl pointer-events-none"></div>
 
             <div class="relative z-10 w-full max-w-md">
-                {{-- Mobile Brand Header --}}
-                <div class="mb-6 lg:hidden flex items-center justify-between">
-                    <a href="{{ url('/') }}" class="inline-flex items-center gap-2.5 text-xl font-bold tracking-tight text-white">
-                        <img src="{{ asset('images/netafarm-logo.png') }}" alt="Netafarm" class="h-9 w-9 shrink-0 object-contain drop-shadow-[0_0_8px_rgba(56,189,248,0.4)]">
-                        <span>Neta<span class="text-sky-400">farm</span></span>
+                
+                {{-- Back to Home link --}}
+                <div class="mb-6 flex items-center justify-between">
+                    <a href="{{ url('/') }}" class="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-sky-300 transition">
+                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                        <span>Kembali ke Beranda</span>
                     </a>
-                    <span class="inline-flex items-center gap-1.5 rounded-full bg-sky-500/15 border border-sky-400/30 px-3 py-1 text-[11px] font-mono text-sky-300">
-                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 anim-ping-fast"></span>
-                        GPS Aktif
+                    <span class="inline-flex items-center gap-1.5 text-[10px] font-mono text-slate-500">
+                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                        Server Siap
                     </span>
                 </div>
 
-                {{-- The Login Card --}}
-                <div class="rounded-3xl border border-slate-800 bg-slate-900/90 p-7 shadow-2xl shadow-slate-950/80 backdrop-blur-xl sm:p-9 text-slate-100">
+                {{-- Card Wrapper containing the slot --}}
+                <div class="rounded-3xl border border-slate-800/90 bg-slate-900/80 p-6 sm:p-8 shadow-2xl shadow-slate-950/90 backdrop-blur-xl">
                     {{ $slot }}
                 </div>
-                
-                {{-- Bottom Micro Tagline --}}
-                <div class="mt-6 flex items-center justify-center gap-2 text-xs text-slate-500">
-                    <svg class="h-3.5 w-3.5 text-sky-400/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                    <span>Koneksi aman terenkripsi &bull; Sistem Operasional Motoris</span>
+
+                {{-- Footer Info --}}
+                <div class="mt-6 text-center text-xs text-slate-500 space-y-1">
+                    <p>&copy; {{ date('Y') }} CV. Netafarm Indolestari &bull; Sistem Operasional Motoris</p>
+                    <p class="text-[11px] text-slate-600">Jl. Raya Sawunggaling No.150 A, Jemundo, Kec. Taman, Sidoarjo</p>
                 </div>
+
             </div>
         </main>
 
     </div>
 
+    {{-- LEAFLET INTERACTIVE MAP SCRIPT --}}
     <script>
-        window.addEventListener('load', function () {
-            if (!window.Swal) return;
-            @if ($errors->any()) 
-                window.Swal.fire({ 
-                    icon: 'error', 
-                    title: 'Login belum berhasil', 
-                    html: @json($errors->all('<div class="text-left text-xs">:message</div>')), 
-                    confirmButtonColor: '#0284c7',
-                    background: '#0f172a',
-                    color: '#f8fafc'
-                }); 
-            @endif
-            @if (session('status')) 
-                window.Swal.fire({ 
-                    icon: 'success', 
-                    title: 'Berhasil', 
-                    text: @json(session('status')), 
-                    timer: 2400, 
-                    showConfirmButton: false,
-                    background: '#0f172a',
-                    color: '#f8fafc'
-                }); 
-            @endif
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof L === 'undefined') return;
+
+            const mapEl = document.getElementById('leafletLoginMap');
+            if (!mapEl) return;
+
+            // Center between Netafarm HQ (Jemundo) and Surabaya Outlets
+            const map = L.map('leafletLoginMap', {
+                center: [-7.3550, 112.7200],
+                zoom: 12,
+                zoomControl: false,
+                attributionControl: false
+            });
+
+            // Dark Matter tile layer by CartoDB
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                maxZoom: 19,
+                subdomains: 'abcd',
+            }).addTo(map);
+
+            // Re-invalidate size to avoid tile clipping
+            setTimeout(() => { map.invalidateSize(); }, 300);
+
+            // 1. Custom Glowing HTML Marker for Netafarm HQ
+            const hqIcon = L.divIcon({
+                className: 'custom-map-marker',
+                html: `
+                    <div class="relative flex items-center justify-center">
+                        <span class="absolute h-10 w-10 rounded-full bg-sky-500/25 animate-ping"></span>
+                        <span class="absolute h-6 w-6 rounded-full bg-sky-500/35"></span>
+                        <span class="relative h-4 w-4 rounded-full bg-sky-400 border-2 border-white shadow-lg shadow-sky-500/60"></span>
+                    </div>
+                `,
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            });
+
+            // 2. Custom Glowing HTML Marker for Kios Outlets
+            const outletIcon = L.divIcon({
+                className: 'custom-map-marker',
+                html: `
+                    <div class="relative flex items-center justify-center">
+                        <span class="absolute h-6 w-6 rounded-full bg-emerald-500/30 animate-pulse"></span>
+                        <span class="relative h-3.5 w-3.5 rounded-full bg-emerald-400 border-2 border-white shadow-md shadow-emerald-500/40"></span>
+                    </div>
+                `,
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
+            });
+
+            // 3. Custom Sales Motoris Beacon Icon
+            const motorisIcon = L.divIcon({
+                className: 'custom-map-marker',
+                html: `
+                    <div class="relative flex items-center justify-center">
+                        <span class="absolute h-12 w-12 rounded-full bg-amber-400/25 animate-ping"></span>
+                        <span class="absolute h-7 w-7 rounded-full bg-amber-400/35"></span>
+                        <div class="relative h-6 w-6 rounded-full bg-amber-500 border-2 border-white shadow-xl flex items-center justify-center text-[10px] text-slate-950 font-black">
+                            🛵
+                        </div>
+                    </div>
+                `,
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            });
+
+            // Realistic road route coordinates from Jemundo, Taman to Surabaya Outlets
+            const routeCoords = [
+                [-7.3735, 112.7051], // Netafarm HQ (Jemundo, Taman)
+                [-7.3690, 112.7110], // Sepanjang
+                [-7.3620, 112.7180],
+                [-7.3550, 112.7240], // Kebraon
+                [-7.3450, 112.7300], // Kios Barokah Mart
+                [-7.3380, 112.7310], // Jambangan
+                [-7.3290, 112.7280], // Pagesangan
+                [-7.3180, 112.7320], // Greenhouse Mitra Wonokromo
+                [-7.3100, 112.7250]  // Sub-Distributor Surabaya Selatan
+            ];
+
+            // Outer Glow Path
+            L.polyline(routeCoords, {
+                color: '#0284c7',
+                weight: 12,
+                opacity: 0.25,
+                lineCap: 'round',
+                lineJoin: 'round'
+            }).addTo(map);
+
+            // Active Glowing Navigation Path
+            L.polyline(routeCoords, {
+                color: '#38bdf8',
+                weight: 4.5,
+                opacity: 0.95,
+                lineCap: 'round',
+                lineJoin: 'round',
+                dashArray: '10, 8'
+            }).addTo(map);
+
+            // Add HQ Marker
+            L.marker([-7.3735, 112.7051], { icon: hqIcon })
+                .addTo(map)
+                .bindPopup(`
+                    <div class="p-2.5 text-xs text-slate-100 min-w-[190px]">
+                        <div class="flex items-center gap-1.5 font-bold text-sky-400 text-sm">
+                            <span>🏢 Netafarm Central HQ</span>
+                        </div>
+                        <p class="text-[11px] text-slate-300 mt-1">Jl. Raya Sawunggaling No.150 A, Jemundo, Taman, Sidoarjo</p>
+                        <div class="mt-2 pt-2 border-t border-slate-700/60 flex items-center justify-between text-[10px]">
+                            <span class="text-slate-400">Depot Distribusi</span>
+                            <span class="font-mono text-emerald-400 font-bold">PUSAT OPERASIONAL</span>
+                        </div>
+                    </div>
+                `);
+
+            // Add Outlets
+            L.marker([-7.3450, 112.7300], { icon: outletIcon })
+                .addTo(map)
+                .bindPopup(`
+                    <div class="p-2.5 text-xs text-slate-100 min-w-[190px]">
+                        <p class="font-bold text-white text-sm">🏪 Kios Tani Barokah Mart</p>
+                        <p class="text-[11px] text-slate-300 mt-1">Status: Tiba di Lokasi &bull; Jadwal 09:00 WIB</p>
+                        <div class="mt-2 pt-2 border-t border-slate-700/60 flex items-center justify-between text-[10px]">
+                            <span class="text-slate-400">Pesanan Masuk</span>
+                            <span class="font-mono text-emerald-400 font-bold">Rp 855.000</span>
+                        </div>
+                    </div>
+                `);
+
+            L.marker([-7.3180, 112.7320], { icon: outletIcon })
+                .addTo(map)
+                .bindPopup(`
+                    <div class="p-2.5 text-xs text-slate-100 min-w-[190px]">
+                        <p class="font-bold text-white text-sm">🌿 Greenhouse Mitra Sejahtera</p>
+                        <p class="text-[11px] text-slate-300 mt-1">Status: Check-in Terjadwal</p>
+                        <div class="mt-2 pt-2 border-t border-slate-700/60 flex items-center justify-between text-[10px]">
+                            <span class="text-slate-400">Katalog Produk</span>
+                            <span class="font-mono text-sky-400 font-bold">Nutrisi AB Mix & Rockwool</span>
+                        </div>
+                    </div>
+                `);
+
+            L.marker([-7.3100, 112.7250], { icon: outletIcon })
+                .addTo(map)
+                .bindPopup(`
+                    <div class="p-2.5 text-xs text-slate-100 min-w-[190px]">
+                        <p class="font-bold text-white text-sm">🌾 Sub-Distributor Surabaya</p>
+                        <p class="text-[11px] text-slate-300 mt-1">Status: Kunjungan Rutin Mingguan</p>
+                    </div>
+                `);
+
+            // Animated Moving Motoris Marker
+            const movingMarker = L.marker(routeCoords[0], { icon: motorisIcon }).addTo(map);
+            let stepIndex = 0;
+            setInterval(() => {
+                stepIndex = (stepIndex + 1) % routeCoords.length;
+                movingMarker.setLatLng(routeCoords[stepIndex]);
+                
+                // Random speed variance for realism
+                const speedEl = document.getElementById('liveSpeedText');
+                if (speedEl) {
+                    speedEl.innerText = Math.floor(34 + Math.random() * 8) + ' km/h';
+                }
+            }, 2500);
         });
     </script>
+
     @include('partials.pwa-script')
 </body>
 </html>
