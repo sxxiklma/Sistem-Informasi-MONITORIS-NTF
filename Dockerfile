@@ -1,6 +1,6 @@
 FROM php:8.2-apache
 
-# Install required system dependencies & PHP extensions
+# Install required system dependencies & PHP extensions (supports SQLite, MySQL, and PostgreSQL)
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -12,7 +12,8 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     sqlite3 \
     libsqlite3-dev \
-    && docker-php-ext-install pdo_sqlite pdo_mysql mbstring exif pcntl bcmath gd zip \
+    libpq-dev \
+    && docker-php-ext-install pdo_sqlite pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd zip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Configure Apache DocumentRoot to point to Laravel's public directory
@@ -33,17 +34,11 @@ COPY . /var/www/html
 # Install production dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Set correct permissions for Laravel storage and cache
+# Set correct permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database \
+    && chmod +x /var/www/html/docker/entrypoint.sh
 
-EXPOSE 80
+EXPOSE 80 10000
 
-# Entrypoint script: optimize cache and start Apache
-CMD touch /var/www/html/database/database.sqlite \
-    && chown www-data:www-data /var/www/html/database/database.sqlite \
-    && php artisan migrate --force \
-    && php artisan db:seed --class=DatabaseSeeder --force \
-    && php artisan storage:link || true \
-    && php artisan optimize \
-    && apache2-foreground
+CMD ["/var/www/html/docker/entrypoint.sh"]
