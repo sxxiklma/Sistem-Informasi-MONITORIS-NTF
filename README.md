@@ -1,66 +1,79 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sistem-Informasi-MONITORIS-NTF
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**Sistem Monitoring & Operasional Sales Motoris — CV. Netafarm Indolestari**  
+*Distributor Sarana Pertanian, Hidroponik, Perikanan, Peternakan & Greenhouse (Sidoarjo, Jawa Timur)*
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🌟 Fitur Utama
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+1. **Monitoring & Tracking Kunjungan GPS**
+   - Check-in dan check-out berbasis GPS & Geofence di outlet pelanggan.
+   - Deteksi presisi titik lokasi toko/kios mitra dan validasi jarak.
+   - Histori kunjungan dan visualisasi rute jalan raya lapangan.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+2. **Manajemen Outlet & Pelanggan**
+   - Master data toko mitra, kontak pemilik, dan pemetaan wilayah.
+   - Sales penanggung jawab per outlet dan pemantauan riwayat transaksi.
 
-## Learning Laravel
+3. **Pencatatan Pesanan (Sales Order)**
+   - Input pesanan langsung dari lapangan dengan katalog produk pertanian/hidroponik.
+   - Manajemen pembayaran tunai, tempo, serta batas piutang (*credit limit*).
+   - Sinkronisasi stok bawaan sales motoris.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+4. **Progressive Web App (PWA) Ready**
+   - Mendukung instalasi aplikasi di smartphone (Android/iOS) dan desktop.
+   - Dilengkapi service worker caching dan manifest aplikasi.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+5. **Akses Multi-Peran (Role-Based Access Control)**
+   - **Admin**: Akses penuh operasional, master data, konfigurasi harga, dan laporan.
+   - **Supervisor**: Monitoring tim sales motoris, approval plafon piutang, dan evaluasi KPI.
+   - **Sales Motoris**: Ruang kerja mobile untuk kunjungan outlet, katalog, dan input penjualan.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 🔐 Kredensial Pengujian (Demo)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+| Peran | Email | Kata Sandi |
+|---|---|---|
+| **Admin** | `admin@motoris.test` | `password` |
+| **Sales Motoris** | `sofan@motoris.test` | `password` |
+| **Supervisor** | `supervisor@motoris.test` | `password` |
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+## 🚀 Panduan Menjalankan Aplikasi (Lokal)
 
-## Contributing
+### 1. Prasyarat
+- PHP >= 8.2
+- Composer
+- Node.js & NPM
+- SQLite / MySQL
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 2. Instalasi
+```bash
+# Clone repository
+git clone https://github.com/sxxiklma/Sistem-Informasi-MONITORIS-NTF.git
+cd Sistem-Informasi-MONITORIS-NTF
 
-## Code of Conduct
+# Install dependensi backend & frontend
+composer install
+npm install
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# Siapkan file environment & database
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
 
-## Security Vulnerabilities
+# Build asset frontend
+npm run build
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Jalankan server lokal
+php artisan serve
+```
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 🏢 CV. Netafarm Indolestari
+- **Alamat Kantor**: Jl. Raya Sawunggaling No.150 A, Jemundo, Kec. Taman, Kabupaten Sidoarjo, Jawa Timur
+- **Sistem**: MotorisTrack Operational Platform
