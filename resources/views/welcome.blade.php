@@ -17,16 +17,6 @@
                     <img src="{{ asset('images/netafarm-logo.png') }}" alt="Netafarm" class="h-9 w-9 shrink-0 object-contain">
                     <span>Neta<span class="text-sky-400">farm</span></span>
                 </a>
-                <div class="flex items-center gap-2">
-                    <button type="button" onclick="triggerPwaInstall()" class="inline-flex items-center gap-1.5 rounded-xl border border-sky-400/50 bg-sky-500/15 hover:bg-sky-500/25 px-3.5 py-2 text-xs font-bold text-sky-300 transition shadow-sm active:scale-95">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                        <span>Install Aplikasi</span>
-                    </button>
-                    <a href="{{ route('login') }}" class="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900/80 px-4 py-2 text-xs font-bold text-white hover:bg-slate-800 transition active:scale-95">
-                        <span>Login</span>
-                        <svg class="h-3.5 w-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                    </a>
-                </div>
             </header>
 
             <section class="flex flex-1 items-center py-12 sm:py-16 lg:py-20">
